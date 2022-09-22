@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:crop_image/crop_image.dart';
 import 'package:flutter/material.dart';
+import 'package:image/image.dart' as image_;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_cropping/image_cropping.dart';
 import 'package:image_picker/image_picker.dart';
@@ -125,10 +126,8 @@ class _MyHomePageState extends State<MyHomePage> {
       imagePicked = File(pickedFile.path);
       setState(() {});
       imageBytes = await pickedFile.readAsBytes();
-      image = await Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (ctx) => CropImagePage(imageBytes: imageBytes!)));
+      // image = await Navigator.push(context,
+      //     MaterialPageRoute(builder: (ctx) => CropImagePage(image: (image!)));
     } else {
       print('No image path received');
     }
@@ -140,12 +139,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (pickedFile != null) {
       imagePicked = File(pickedFile.path);
+      image_.Image? image =
+          image_.decodeImage(File(pickedFile.path).readAsBytesSync());
       setState(() {});
       imageBytes = await pickedFile.readAsBytes();
-      image = await Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (ctx) => CropImagePage(imageBytes: imageBytes!)));
+      image = await Navigator.push(context,
+          MaterialPageRoute(builder: (ctx) => CropImagePage(image: image!)));
       // _imageCropping();
     } else {
       print('No image path received');
@@ -177,9 +176,9 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class CropImagePage extends StatefulWidget {
-  final Uint8List imageBytes;
+  final image_.Image? image;
 
-  const CropImagePage({Key? key, required this.imageBytes}) : super(key: key);
+  const CropImagePage({Key? key, required this.image}) : super(key: key);
 
   @override
   _CropImagePageState createState() => _CropImagePageState();
@@ -187,26 +186,30 @@ class CropImagePage extends StatefulWidget {
 
 class _CropImagePageState extends State<CropImagePage> {
   final controller = CropController(
-    aspectRatio: 3,
+    aspectRatio: 3 / 2,
     defaultCrop: const Rect.fromLTRB(0.1, 0.1, 0.9, 0.9),
   );
+
+  Image? image;
 
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
           title: const Text('Crop Image'),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: CropImage(
-            controller: controller,
-            image: Image.memory(
-              widget.imageBytes,
-              // height: 800,
-              // width: 800,
-              cacheHeight: 900,
-              cacheWidth: 500,
-              fit: BoxFit.fitHeight,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: CropImage(
+              controller: controller,
+              image: image!,
+              // scale: 1,
+              // widget.imageBytes,
+              // // height: 800,
+              // // width: 800,
+              // cacheHeight: 500,
+              // cacheWidth: 500,
+              // fit: BoxFit.fitHeight,
               // fit: BoxFit.contain,
             ),
           ),
@@ -270,8 +273,9 @@ class _CropImagePageState extends State<CropImagePage> {
   }
 
   Future<void> _finished(BuildContext context) async {
-    Image image = await controller.croppedImage();
+    image = await controller.croppedImage();
     Navigator.pop(context, image);
+    // copyResize(widget.imageBytes);
     // await showDialog<bool>(
     //   context: context,
     //   builder: (context) {

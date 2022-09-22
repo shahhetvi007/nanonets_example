@@ -42,6 +42,7 @@ dependencies:
   image_cropper: ^3.0.0
   image_cropping: ^0.0.13
   crop_image: ^1.0.3
+  image: ^3.2.0
 
 dev_dependencies:
   flutter_test:
